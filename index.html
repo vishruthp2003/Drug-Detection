@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Picture and Get Drug Info</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Box for clicking picture -->
+        <div class="box" id="capture-box">
+            <video id="video" autoplay></video>
+        </div>
+
+        <!-- Box for displaying drug info -->
+        <div class="box" id="text-box">
+            <canvas id="canvas"></canvas>
+            <p id="display-text">Your captured image will appear here.</p>
+            <div id="drug-info"></div> <!-- Display drug information here -->
+        </div>
+    </div>
+
+    <!-- Centered button below the boxes -->
+    <div class="center-button">
+        <button onclick="capturePicture()">Capture Picture</button>
+    </div>
+
+    <!-- Include Tesseract.js -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
+
+    <!-- Include the external JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
+
