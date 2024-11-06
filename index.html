@@ -9,15 +9,15 @@
 <body>
     <!-- Main Container -->
     <div class="container">
-        <!-- Box for clicking picture -->
+        <!-- Box for clicking picture (this will show the captured image) -->
         <div class="box" id="capture-box">
             <video id="video" autoplay></video>
+            <canvas id="canvas" style="display: none;"></canvas> <!-- Hidden canvas for drawing -->
         </div>
 
         <!-- Box for displaying drug info -->
         <div class="box" id="text-box">
-            <canvas id="canvas"></canvas>
-            <p id="display-text">Your captured image will appear here.</p>
+            <p id="display-text">Drug Information will appear here.</p>
             <div id="drug-info"></div> <!-- Display drug information here -->
         </div>
     </div>
@@ -34,4 +34,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
