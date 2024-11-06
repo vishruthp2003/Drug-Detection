@@ -52,6 +52,8 @@ body, html {
 #text-box {
     background-color: #ffe0b2;
     flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 /* Button Styling */
