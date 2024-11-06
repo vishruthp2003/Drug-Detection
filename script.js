@@ -22,65 +22,61 @@ function capturePicture() {
     // Draw the current frame from the video to the canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // Display the captured image in the first box
+    const capturedImage = canvas.toDataURL("image/png").replace("data:image/png;base64,", ""); // Get Base64 of image
+    const imageElement = document.createElement('img');
+    imageElement.src = "data:image/png;base64," + capturedImage;
+    imageElement.style.width = '100%';
+    imageElement.style.height = '100%';
+    document.getElementById("capture-box").innerHTML = '';  // Clear previous content
+    document.getElementById("capture-box").appendChild(imageElement);  // Append the captured image
+
     // Update the text to confirm the picture was captured
     document.getElementById("display-text").textContent = "Picture Captured!";
 
-    // Run OCR to extract text from the image
-    runOCR(canvas);
+    // Send the image to Google API to extract text and information
+    fetchDrugInfoFromImage(capturedImage);
 }
 
-// Function to perform OCR on the captured image
-function runOCR(canvas) {
-    // Run Tesseract.js OCR on the canvas
-    Tesseract.recognize(
-        canvas,
-        'eng',  // Language
-        {
-            logger: (m) => console.log(m), // Log progress
-        }
-    ).then(({ data: { text } }) => {
-        // Display the extracted text
-        console.log("OCR Text: ", text);
-        document.getElementById("display-text").textContent = "Extracted Text: " + text;
+// Function to send the image to the Google Vision API or another relevant Google API
+function fetchDrugInfoFromImage(base64Image) {
+    const apiKey = 'YOUR_API_KEY_HERE';  // Replace with your actual Google API key
+    const apiUrl = 'https://vision.googleapis.com/v1/images:annotate?key=' + apiKey;
 
-        // Call API to get drug information based on the extracted text
-        fetchDrugInfo(text);
-    }).catch((error) => {
-        console.error("OCR Error: ", error);
-        document.getElementById("display-text").textContent = "OCR failed to extract text.";
+    // Prepare the payload for the API request
+    const payload = {
+        requests: [
+            {
+                image: { content: base64Image },
+                features: [{ type: "TEXT_DETECTION" }]
+            }
+        ]
+    };
+
+    // Send the request to the Google Vision API
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("API Response:", data);
+        if (data.responses && data.responses[0].fullTextAnnotation) {
+            const detectedText = data.responses[0].fullTextAnnotation.text;
+            displayDrugInfo(detectedText);
+        } else {
+            document.getElementById("drug-info").innerHTML = "No drug information found.";
+        }
+    })
+    .catch(error => {
+        console.error("Error fetching data from Google Vision API:", error);
+        document.getElementById("drug-info").innerHTML = "Error fetching drug information.";
     });
 }
 
-// Function to fetch drug information from an API
-function fetchDrugInfo(drugName) {
-    // Use a drug information API to fetch details based on the drug name.
-    // Here, we will use the openFDA API for demonstration.
-    const apiUrl = `https://api.fda.gov/drug/label.json?search=generic_name:"${drugName}"&limit=1`;
-
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data.results && data.results.length > 0) {
-                const drugInfo = data.results[0];
-                displayDrugInfo(drugInfo);
-            } else {
-                document.getElementById("drug-info").innerHTML = "No drug information found.";
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching drug info: ", error);
-            document.getElementById("drug-info").innerHTML = "Error fetching drug information.";
-        });
-}
-
 // Function to display drug information in the second box
-function displayDrugInfo(drugInfo) {
+function displayDrugInfo(detectedText) {
     const infoDiv = document.getElementById("drug-info");
-    infoDiv.innerHTML = `
-        <h3>Drug Information:</h3>
-        <p><strong>Brand Name:</strong> ${drugInfo.openfda.brand_name}</p>
-        <p><strong>Generic Name:</strong> ${drugInfo.openfda.generic_name}</p>
-        <p><strong>Description:</strong> ${drugInfo.description || "No description available."}</p>
-        <p><strong>Indications:</strong> ${drugInfo.indications_and_usage || "No indications available."}</p>
-    `;
+    infoDiv.innerHTML = `<h3>Drug Information Detected:</h3><p>${detectedText}</p>`;
 }
